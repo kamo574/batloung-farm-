@@ -1,0 +1,1 @@
+.env)  %f in (config\db.js middleware\index.js models\base.js models\supplier.js models\fruit.js models\vendor.js models\trade.js controllers\crud.js controllers\supplier.js controllers\fruit.js controllers\vendor.js controllers\trade.js routes\suppliers.js routes\fruits.js routes\vendors.js routes\trade.js public\index.html server.js .env) do type nul 

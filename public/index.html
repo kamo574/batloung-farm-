@@ -1,0 +1,470 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Batloung Farm · Distribution System</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--g:#1f7a4d;--g2:#2fa86b;--d:#0f3d2a;--o:#ff8c42;--bg:#f2f6f1;--card:#fff;--t:#1d2b24;--line:#e4ebe6;--muted:#7a8c84;--red:#e5484d;--sh:0 6px 24px rgba(15,61,42,.08)}
+body.dark{--bg:#0e1612;--card:#17221c;--t:#e6f1ea;--line:#25342b;--muted:#8fa89b;--sh:0 6px 24px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{display:flex;min-height:100vh;background:var(--bg);color:var(--t);transition:background .3s,color .3s}
+h2{font-size:26px}h3{margin-bottom:10px}.muted{color:var(--muted)}small{font-size:12px}
+/* nav */
+nav{width:238px;flex-shrink:0;background:linear-gradient(185deg,var(--d),var(--g));color:#fff;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:3px;overflow:auto}
+.logo{font-size:20px;font-weight:700;margin:4px 8px 16px;display:flex;gap:8px;align-items:center}
+.logo span{display:inline-block;animation:sw 3s ease-in-out infinite}@keyframes sw{50%{transform:rotate(18deg) scale(1.2)}}
+nav button{display:block;width:100%;text-align:left;background:none;border:0;color:#d8f0e2;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:14.5px;transition:.25s;position:relative}
+nav button:hover,nav button.on{background:rgba(255,255,255,.18);transform:translateX(6px);color:#fff}
+nav button.on::before{content:'';position:absolute;left:-12px;top:20%;height:60%;width:4px;border-radius:4px;background:var(--o)}
+nav kbd{float:right;font-size:10px;background:rgba(255,255,255,.2);padding:2px 6px;border-radius:5px}
+.sp{flex:1}
+#st{display:flex;align-items:center;gap:8px;font-size:12px;padding:9px 12px;background:rgba(255,255,255,.12);border-radius:10px;margin-top:8px}
+#st::before{content:'';width:9px;height:9px;border-radius:50%;background:#5dffa0;animation:pl 1.6s infinite}
+#st.off::before{background:#ff6b6b;animation:pl2 1.6s infinite}
+@keyframes pl{0%{box-shadow:0 0 0 0 #5dffa0}70%{box-shadow:0 0 0 8px transparent}}
+@keyframes pl2{0%{box-shadow:0 0 0 0 #ff6b6b}70%{box-shadow:0 0 0 8px transparent}}
+main{flex:1;padding:28px 32px;max-width:1220px;min-width:0}
+main.pg{animation:up .45s backwards}
+@keyframes up{from{opacity:0;transform:translateY(18px)}}
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:20px;box-shadow:var(--sh);animation:up .5s backwards}
+.card.center{text-align:center;padding:50px}.big{font-size:46px}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px;flex-wrap:wrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px;margin-bottom:20px}
+.g2{display:grid;grid-template-columns:1.7fr 1fr;gap:20px}
+.g2e{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:1000px){.g2,.g2e{grid-template-columns:1fr}}
+.stat{display:flex;gap:14px;align-items:center;margin:0;transition:.3s}.stat:hover,.fc:hover{transform:translateY(-5px);box-shadow:0 14px 34px rgba(15,61,42,.18)}
+.si{font-size:26px;width:52px;height:52px;border-radius:14px;background:var(--bg);display:grid;place-items:center}
+.stat small{color:var(--muted);display:block}.stat b{font-size:24px;color:var(--g)}
+body.dark .stat b{color:var(--g2)}
+.hero{background:linear-gradient(120deg,var(--d),var(--g) 60%,var(--g2));color:#fff;border-radius:22px;padding:26px 28px;margin-bottom:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;animation:up .5s backwards;position:relative;overflow:hidden}
+.hero::after{content:'🍎🍊🍌';position:absolute;right:20px;bottom:-14px;font-size:60px;opacity:.15;letter-spacing:8px}
+.hero p{opacity:.85;margin:6px 0 14px}.hero .b{background:rgba(255,255,255,.2)}.hero .b:hover{background:var(--o)}
+.qa{display:flex;gap:10px;flex-wrap:wrap}.clk{font-size:13px;opacity:.9;align-self:flex-start;background:rgba(255,255,255,.15);padding:8px 14px;border-radius:12px}
+.alert{background:linear-gradient(90deg,#ff6b6b,#ff8c42);color:#fff;border-radius:16px;padding:14px 18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;gap:10px;animation:up .5s backwards,pulse 2s 1s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,107,107,.2)}}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.chip{background:var(--card);border:1px solid var(--line);padding:7px 14px;border-radius:30px;font-size:13px;animation:up .4s backwards}.chip.warn{background:#fff3e0;color:#b25e00;border-color:#ffd9a8}
+/* forms/buttons */
+input,select{padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px;width:100%;background:var(--card);color:var(--t);transition:.2s}
+input:focus,select:focus{outline:0;border-color:var(--g2);box-shadow:0 0 0 3px rgba(47,168,107,.2)}
+label{font-size:13px;display:grid;gap:5px;font-weight:600}label small{font-weight:400}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;align-items:end;margin-bottom:10px}
+.b{background:var(--g);color:#fff;border:0;padding:10px 18px;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;transition:.2s;display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.b:hover{background:var(--o);transform:translateY(-2px);box-shadow:0 6px 16px rgba(255,140,66,.35)}.b:active{transform:scale(.96)}
+.b.ghost{background:transparent;color:var(--t);border:1px solid var(--line)}.b.ghost:hover{background:var(--line);box-shadow:none}
+.b.danger{background:var(--red)}.b.danger:hover{background:#c0292e;box-shadow:0 6px 16px rgba(229,72,77,.4)}.b.sm{padding:6px 12px;font-size:12px}
+.b.ld{pointer-events:none;color:transparent!important;position:relative}
+.b.ld::after{content:'';position:absolute;width:16px;height:16px;left:calc(50% - 8px);top:calc(50% - 8px);border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spn .6s linear infinite}
+@keyframes spn{to{transform:rotate(360deg)}}
+.ib{background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:5px 8px;cursor:pointer;margin-right:4px;transition:.2s;font-size:14px}.ib:hover{transform:scale(1.18) rotate(-5deg);background:var(--line)}
+/* tables */
+.tools{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.tools input{max-width:300px}.cnt{margin-left:auto;font-size:12px}
+.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:11px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{text-transform:capitalize;color:var(--g);cursor:pointer;user-select:none;font-size:13px}th:hover{color:var(--o)}body.dark th{color:var(--g2)}
+tbody tr{animation:up .4s backwards;transition:.2s}tbody tr:hover{background:var(--bg)}
+.empty{text-align:center;color:var(--muted);padding:30px}.act{white-space:nowrap}
+.bd{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:var(--line)}
+.bd.g{background:#d9f5e5;color:#13673e}.bd.o{background:#fff0d9;color:#a85a00}.bd.r{background:#ffe0e0;color:#b3262b}
+.neg{color:var(--red);font-weight:700}.neg2{color:#e08a00;font-weight:700}.pos{color:var(--g2);font-weight:700}
+/* bars */
+.bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--g),var(--g2));width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1);border-radius:6px}
+.bar.low i{background:linear-gradient(90deg,#e5484d,#ff8c42)}
+.sz,.hb{display:grid;grid-template-columns:90px 1fr 46px;gap:10px;align-items:center;margin:9px 0;font-size:13px}.hb{grid-template-columns:130px 1fr 46px}
+.fc{transition:.3s}.fh{display:flex;gap:12px;align-items:center;margin-bottom:10px}.fh .big{font-size:38px}.fh h3{margin:0}.fh .bd{margin-left:auto}.fa{text-align:right;margin-top:8px}
+/* charts */
+.ch{width:100%;height:auto}.lb{font-size:11px;fill:var(--muted)}.lb.v{fill:var(--t);font-weight:700}
+.bar7{fill:var(--g2);transform-box:fill-box;transform-origin:bottom;animation:gw .9s cubic-bezier(.2,1.2,.3,1) backwards;transition:fill .2s}.bar7:hover{fill:var(--o)}
+@keyframes gw{from{transform:scaleY(0)}}
+.dn{position:relative;width:190px;margin:0 auto 12px}.dn svg{width:100%}.dc{position:absolute;inset:0;display:grid;place-content:center;text-align:center}.dc b{font-size:26px}
+.seg{transition:stroke-dasharray 1.3s cubic-bezier(.2,.8,.2,1)}
+.lg{display:grid;gap:6px;font-size:13px}.lg span{display:flex;align-items:center;gap:8px}.lg i{width:11px;height:11px;border-radius:3px}
+.tl{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);cursor:default}.tl:last-child{border:0}
+.tl>i{font-style:normal;width:38px;height:38px;border-radius:12px;background:var(--bg);display:grid;place-items:center}.tl>div{flex:1;display:grid}.tl small{color:var(--muted)}
+.tl[onclick]{cursor:pointer}.tl[onclick]:hover{background:var(--bg)}
+.bigno{text-align:center;padding:10px}.bigno b{font-size:40px;color:var(--g)}.bigno small{display:block}
+.trophy{display:flex;gap:16px;align-items:center}.trophy .big{animation:sw 2.5s infinite}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{background:var(--card);border:1px solid var(--line);padding:9px 18px;border-radius:30px;cursor:pointer;color:var(--t);font-weight:600;transition:.2s}.tab.on{background:var(--g);color:#fff;border-color:var(--g)}
+/* builder */
+.it{animation:up .35s backwards}.sb{display:grid;gap:2px;align-content:end;min-width:90px}.sb b{font-size:15px}.av{color:var(--g2)}.av.bad{color:var(--red);font-weight:700}
+.sumbar{position:sticky;bottom:14px;background:var(--card);border:1px solid var(--line);box-shadow:0 10px 40px rgba(0,0,0,.2);border-radius:18px;padding:14px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;z-index:5}
+.sumbar div{display:grid}.sumbar b{font-size:20px}.sumbar .b{margin-left:auto;padding:12px 26px}
+.pop{animation:popk .35s}@keyframes popk{50%{transform:scale(1.18);color:var(--o)}}
+/* modal */
+.ov{position:fixed;inset:0;background:rgba(10,25,18,.55);backdrop-filter:blur(4px);display:grid;place-items:center;opacity:0;transition:.25s;z-index:1500;padding:16px;overflow:auto}.ov.on{opacity:1}
+.md{background:var(--card);color:var(--t);border-radius:22px;padding:24px;width:min(460px,100%);transform:scale(.88) translateY(24px);transition:.35s cubic-bezier(.2,1.3,.4,1);box-shadow:0 24px 70px rgba(0,0,0,.4)}
+.ov.on .md{transform:none}.md.wide{width:min(640px,100%)}.md.pal{padding:12px;margin-top:-20vh}
+.md.shake{animation:shk .4s}@keyframes shk{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+.md form{display:grid;gap:13px}.mh{display:flex;align-items:center;gap:12px;margin-bottom:14px}.mh h3{margin:0;flex:1}
+.mi{width:42px;height:42px;border-radius:12px;background:var(--bg);display:grid;place-items:center;font-size:20px}.mi.red{background:#ffe0e0}
+.x{background:none;border:0;font-size:18px;cursor:pointer;color:var(--muted)}.x:hover{color:var(--red)}
+.mf{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+.pk{font-size:16px!important;margin-bottom:8px}.pi{padding:11px 14px;border-radius:10px;cursor:pointer}.pi.on,.pi:hover{background:var(--line)}
+.okh{text-align:center;margin-bottom:10px}.ck{width:74px;color:var(--g2)}.ck circle{stroke-dasharray:151;stroke-dashoffset:151;animation:dr .6s forwards}.ck path{stroke-dasharray:40;stroke-dashoffset:40;animation:dr .4s .5s forwards}@keyframes dr{to{stroke-dashoffset:0}}
+.rcpt{border:2px dashed var(--line);border-radius:14px;padding:18px}.rh{text-align:center;margin-bottom:10px}.rh b{font-size:20px;display:block}.rh small{color:var(--muted)}
+.rm{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:8px}.rp{margin-bottom:8px}.rcpt table{font-size:13px}.rcpt th{cursor:default}
+.rt{display:flex;justify-content:space-between;padding:6px 0;font-size:15px}
+/* toasts + loaders */
+#toasts{position:fixed;top:16px;right:16px;z-index:3000;display:grid;gap:10px}
+.t{display:flex;gap:12px;align-items:center;padding:13px 16px;border-radius:14px;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:in .5s cubic-bezier(.2,1.4,.4,1);max-width:360px;position:relative;overflow:hidden;cursor:pointer}
+.t i{font-style:normal;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-weight:700;flex-shrink:0}
+.t div{display:grid}.t b{font-size:13px}.t span{font-size:13px}.t u{position:absolute;left:0;bottom:0;height:3px;background:rgba(255,255,255,.75);animation:pb 4.5s linear forwards}
+.t.ok{background:linear-gradient(135deg,#1f7a4d,#2fa86b)}.t.error{background:linear-gradient(135deg,#d93a3f,#f0646a)}.t.info{background:linear-gradient(135deg,#2563eb,#3b82f6)}.t.warn{background:linear-gradient(135deg,#e08a00,#ffb020)}
+.t.bye{animation:out .35s forwards}@keyframes in{from{transform:translateX(120%) scale(.8)}}@keyframes out{to{opacity:0;transform:translateX(120%)}}@keyframes pb{to{width:0}}
+#np{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--o),var(--g2));z-index:2500;transition:width .3s,opacity .4s;box-shadow:0 0 12px var(--o)}
+#ld{position:fixed;inset:0;background:rgba(242,246,241,.75);backdrop-filter:blur(5px);display:none;place-items:center;z-index:2400}body.dark #ld{background:rgba(14,22,18,.75)}
+#ld.on{display:grid}.lc{text-align:center}.fr span{display:inline-block;font-size:44px;animation:bn .7s infinite alternate ease-in-out}
+.fr span:nth-child(2){animation-delay:.15s}.fr span:nth-child(3){animation-delay:.3s}.fr span:nth-child(4){animation-delay:.45s}
+@keyframes bn{to{transform:translateY(-26px) rotate(20deg)}}
+#lm{margin:12px 0;color:var(--muted);font-weight:600}.lbar{width:180px;height:5px;background:var(--line);border-radius:5px;margin:auto;overflow:hidden}.lbar i{display:block;width:40%;height:100%;background:var(--g2);border-radius:5px;animation:sl 1s infinite ease-in-out}@keyframes sl{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
+.sk{background:linear-gradient(90deg,var(--line) 25%,var(--card) 50%,var(--line) 75%);background-size:200% 100%;animation:sh 1.2s infinite;border-radius:14px}@keyframes sh{to{background-position:-200% 0}}
+#cf{position:fixed;inset:0;pointer-events:none;z-index:4000}
+#map{height:440px;border-radius:16px;margin-top:14px}.num{background:var(--o);color:#fff;border-radius:50%;width:26px;height:26px;text-align:center;line-height:24px;font-weight:700;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.m3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}.m3 div{background:var(--bg);border-radius:14px;padding:12px;text-align:center}.m3 b{font-size:20px;color:var(--g);display:block}
+@media(max-width:860px){body{flex-direction:column}nav{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap}nav button{width:auto}.sp{display:none}main{padding:18px}}
+@media print{body>*:not(.ov){display:none!important}.ov{position:static;background:none;backdrop-filter:none;opacity:1}.md{box-shadow:none;transform:none}.mf,.x{display:none}}
+</style></head><body>
+<div id="np"></div>
+<div id="ld"><div class="lc"><div class="fr"><span>🍎</span><span>🍊</span><span>🍌</span><span>🍇</span></div><p id="lm"></p><div class="lbar"><i></i></div></div></div>
+<div id="toasts"></div>
+<nav>
+  <div class="logo"><span>🍊</span> Batloung Farm</div>
+  <button data-v="dash">📊 Dashboard</button><button data-v="suppliers">🚚 Suppliers</button>
+  <button data-v="stock">🍌 Fruits &amp; Stock</button><button data-v="vendors">🛒 Vendors</button>
+  <button data-v="purchase">📦 New Purchase</button><button data-v="sale">🧾 New Sale</button>
+  <button data-v="history">🕘 History</button><button data-v="reports">📈 Reports</button><button data-v="map">🗺️ Route Planner</button>
+  <div class="sp"></div>
+  <button onclick="palette()">⌨️ Quick search <kbd>Ctrl K</kbd></button>
+  <button onclick="toggleDark()">🌓 Dark mode</button>
+  <div id="st"><span>Checking…</span></div>
+</nav>
+<main id="view"></main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],view=$('#view');
+const H=(e,h)=>{e.innerHTML=h};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'M'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const ymd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const SZ=['Small','Medium','Large'],LOW=20;
+const PROV=['Gauteng','Free State','KwaZulu-Natal','Western Cape','Eastern Cape','Limpopo','Mpumalanga','North West'];
+const TOWNS=['Maseru','Teyateyaneng','Mafeteng','Leribe'];
+const EMO={Apples:'🍎',Bananas:'🍌',Oranges:'🍊',Mangoes:'🥭',Grapes:'🍇'};
+const COL=['#1f7a4d','#ff8c42','#ffd23f','#e5484d','#a855f7','#3b82f6'];
+let cur='dash',busy=0,ldT,ldI,np=0,npT,PR={},STK={},KIND='sale',online=true;
+const CACHE={},TB={};
+
+/* ---------- loaders, toasts ---------- */
+function npStart(){clearInterval(npT);const b=$('#np');b.style.opacity=1;b.style.width='8%';np=8;npT=setInterval(()=>{np+=(90-np)*.12;b.style.width=np+'%'},200)}
+function npDone(){clearInterval(npT);const b=$('#np');b.style.width='100%';setTimeout(()=>{b.style.opacity=0;setTimeout(()=>b.style.width='0',400)},250)}
+const LDM=['Picking fresh data…','Weighing the boxes…','Counting the stock…','Polishing the apples…','Almost there…'];
+function busyOn(){if(busy++===0){npStart();ldT=setTimeout(()=>{$('#ld').classList.add('on');let i=0;$('#lm').textContent=LDM[0];ldI=setInterval(()=>{$('#lm').textContent=LDM[++i%LDM.length]},1100)},600)}}
+function busyOff(){if(--busy<=0){busy=0;npDone();clearTimeout(ldT);clearInterval(ldI);$('#ld').classList.remove('on')}}
+const ICON={ok:'✔',error:'✖',info:'ℹ',warn:'⚠'},TTL={ok:'Success',error:'Error',info:'Info',warn:'Warning'};
+let lastT='',lastTm=0;
+function toast(m,t='ok'){
+  if(m===lastT&&Date.now()-lastTm<1500)return;lastT=m;lastTm=Date.now();
+  const d=document.createElement('div');d.className='t '+t;
+  d.innerHTML=`<i>${ICON[t]}</i><div><b>${TTL[t]}</b><span>${esc(m)}</span></div><u></u>`;
+  d.onclick=()=>kill(d);$('#toasts').append(d);setTimeout(()=>kill(d),4500)}
+function kill(d){d.classList.add('bye');setTimeout(()=>d.remove(),350)}
+function loading(b,on){b.classList.toggle('ld',!!on)}
+function shake(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}
+function confetti(){const c=document.createElement('canvas');c.id='cf';document.body.append(c);const x=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+  const P=Array.from({length:150},()=>({x:innerWidth/2,y:innerHeight/2.2,vx:(Math.random()-.5)*17,vy:Math.random()*-15-4,s:Math.random()*8+4,c:COL[Math.random()*6|0],r:Math.random()*6,vr:(Math.random()-.5)*.4}));
+  let f=0;(function t(){x.clearRect(0,0,c.width,c.height);P.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);x.restore()});if(++f<160)requestAnimationFrame(t);else c.remove()})()}
+
+/* ---------- api ---------- */
+async function api(url,method='GET',body,o={}){
+  if(!o.quiet)busyOn();
+  try{
+    const r=await fetch('/api'+url,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+    const j=await r.json().catch(()=>({message:'Invalid server response'}));
+    if(!r.ok)throw new Error(j.message||'Request failed');
+    if(method!=='GET'&&!o.silent)toast(j.message||'Done');
+    return j.data??j;
+  }catch(e){toast(e instanceof TypeError?'Cannot reach the server. Is it running?':e.message,'error');throw e}
+  finally{if(!o.quiet)busyOff()}
+}
+
+/* ---------- modals ---------- */
+function modal(html,cls=''){
+  const o=document.createElement('div');o.className='ov';o.innerHTML=`<div class="md ${cls}">${html}</div>`;document.body.append(o);
+  requestAnimationFrame(()=>o.classList.add('on'));
+  const esck=e=>{if(e.key==='Escape')close()};
+  const close=()=>{o.classList.remove('on');setTimeout(()=>o.remove(),260);document.removeEventListener('keydown',esck)};
+  document.addEventListener('keydown',esck);
+  o.addEventListener('mousedown',e=>{if(e.target===o)close()});
+  o.querySelectorAll('[data-close]').forEach(b=>b.onclick=close);
+  return{o,close,md:o.firstChild};
+}
+function formModal({title,icon,fields,values={},ok='Save',onSubmit}){
+  const inputs=fields.map(f=>{
+    const v=values[f.n]??'';let el;
+    if(f.opts)el=`<select name="${f.n}">${f.opts.map(o=>`<option ${o==v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+    else el=`<input name="${f.n}" type="${f.t||'text'}" value="${esc(v)}" ${f.req===false?'':'required'} ${f.max!=null?`max="${f.max}"`:''} ${f.t==='number'?'step="0.01" min="0.01"':''} ${f.list?`list="dl_${f.n}"`:''} autocomplete="off">${f.list?`<datalist id="dl_${f.n}">${f.list.map(o=>`<option value="${esc(o)}">`).join('')}</datalist>`:''}`;
+    return `<label>${f.l}${el}${f.hint?`<small class="muted">${f.hint}</small>`:''}</label>`}).join('');
+  const m=modal(`<div class="mh"><span class="mi">${icon}</span><h3>${title}</h3><button class="x" data-close>✕</button></div><form>${inputs}<div class="mf"><button type="button" class="b ghost" data-close>Cancel</button><button class="b" type="submit">${ok}</button></div></form>`);
+  const form=m.md.querySelector('form'),btn=form.querySelector('[type=submit]');
+  const first=form.querySelector('input,select');if(first)first.focus();
+  form.onsubmit=async e=>{e.preventDefault();loading(btn,1);
+    try{await onSubmit(Object.fromEntries(new FormData(form)));m.close()}
+    catch{shake(m.md)}finally{loading(btn,0)}};
+}
+function confirmBox({title,text,ok='Delete',icon='🗑️',run}){
+  const m=modal(`<div class="mh"><span class="mi red">${icon}</span><h3>${title}</h3></div><p class="muted" style="margin:4px 0 20px">${text}</p><div class="mf"><button class="b ghost" id="cn">Cancel</button><button class="b danger" id="ck">${ok}</button></div>`);
+  const b=m.md.querySelector('#ck');m.md.querySelector('#cn').onclick=m.close;
+  b.onclick=async()=>{loading(b,1);try{await run();m.close()}catch{shake(m.md)}finally{loading(b,0)}};
+}
+
+/* ---------- entities: add / edit / delete ---------- */
+const ENT={
+  supplier:{name:'Supplier',url:'/suppliers',id:'supplier_id',icon:'🚚',fields:[{n:'business_name',l:'Business name'},{n:'contact_person',l:'Contact person'},{n:'phone',l:'Phone',t:'tel'},{n:'province',l:'Province',opts:PROV},{n:'address',l:'Address'}]},
+  vendor:{name:'Vendor',url:'/vendors',id:'vendor_id',icon:'🛒',fields:[{n:'vendor_name',l:'Vendor name'},{n:'phone_number',l:'Phone number',t:'tel',hint:'7–15 digits, e.g. 63001234'},{n:'location',l:'Location',list:TOWNS}]},
+  fruit:{name:'Fruit',url:'/fruits',id:'fruit_id',icon:'🍎',fields:[{n:'fruit_name',l:'Fruit',opts:['Apples','Bananas','Oranges','Mangoes','Grapes']},{n:'description',l:'Description',req:false},{n:'status',l:'Status',opts:['Available','Out of Stock','Discontinued']}]}
+};
+const refresh=()=>go(cur,true);
+function addEnt(k){const e=ENT[k];formModal({title:'Add '+e.name,icon:e.icon,fields:e.fields,ok:'＋ Add '+e.name,onSubmit:async d=>{await api(e.url,'POST',d);confetti();refresh()}})}
+function editEnt(k,id){const e=ENT[k],row=CACHE[k].find(r=>r[e.id]==id);
+  formModal({title:'Edit '+e.name,icon:'✏️',fields:e.fields,values:row,ok:'Save changes',onSubmit:async d=>{await api(`${e.url}/${id}`,'PUT',d);refresh()}})}
+function delEnt(k,id){const e=ENT[k],row=CACHE[k].find(r=>r[e.id]==id);
+  confirmBox({title:`Delete ${e.name}?`,text:`<b>${esc(row[e.fields[0].n])}</b> will be removed permanently. This cannot be undone.`,run:async()=>{await api(`${e.url}/${id}`,'DELETE');refresh()}})}
+function payVendor(id){const v=CACHE.vendor.find(x=>x.vendor_id==id);
+  formModal({title:'Record payment',icon:'💵',fields:[{n:'amount',l:`Amount (${esc(v.vendor_name)} owes ${money(v.outstanding_balance)})`,t:'number',max:v.outstanding_balance},{n:'method',l:'Payment method',opts:['Cash','Mobile Money']}],values:{amount:v.outstanding_balance},ok:'Record payment',
+    onSubmit:async d=>{await api(`/vendors/${id}/payments`,'POST',{amount:+d.amount,method:d.method});confetti();refresh()}})}
+function remind(id){const v=[...(CACHE.vendor||[]),...(CACHE.debtor||[])].find(x=>x.vendor_id==id);if(!v)return;
+  const msg=`Hello ${v.vendor_name}, this is Batloung Farm. A friendly reminder that your outstanding balance is ${money(v.outstanding_balance)}. Thank you! 🍎`;
+  toast('Opening WhatsApp…','info');window.open('https://wa.me/266'+String(v.phone_number).replace(/\D/g,'')+'?text='+encodeURIComponent(msg),'_blank')}
+
+/* ---------- smart tables ---------- */
+const BADGE={PAID:'g',PARTIALLY_PAID:'o',UNPAID:'r',Available:'g','Out of Stock':'o',Discontinued:'r'};
+const badge=v=>`<span class="bd ${BADGE[v]||''}">${esc(String(v).replace(/_/g,' '))}</span>`;
+function cell(c,v,o){
+  if(o.money&&o.money.includes(c))return `<span class="${c==='outstanding_balance'&&v>0?'neg':''}">${money(v)}</span>`;
+  if(c==='payment_status'||c==='status')return badge(v);
+  return esc(v);
+}
+function dt(id,rows,cols,o={}){TB[id]={rows,cols,o,k:null,d:1,q:''};
+  return `<div class="tb" id="${id}"><div class="tools">${o.nosearch?'':'<input class="ts" placeholder="🔍 Filter…">'}<button class="b ghost sm" data-x>⬇ CSV</button><span class="muted cnt"></span></div><div class="scroll"><table><thead></thead><tbody></tbody></table></div></div>`}
+function wire(id){
+  const s=TB[id],box=$('#'+id);if(!s||!box)return;
+  const draw=s.draw=()=>{
+    let r=s.rows.filter(x=>!s.q||s.cols.some(c=>String(x[c]??'').toLowerCase().includes(s.q)));
+    if(s.k)r=[...r].sort((a,b)=>{const x=a[s.k],y=b[s.k];return(typeof x==='number'&&typeof y==='number'?x-y:String(x).localeCompare(String(y),undefined,{numeric:true}))*s.d});
+    box.querySelector('thead').innerHTML='<tr>'+s.cols.map(c=>`<th data-k="${c}">${c.replace(/_/g,' ')} ${s.k===c?(s.d>0?'▲':'▼'):''}</th>`).join('')+(s.o.act?'<th>Actions</th>':'')+'</tr>';
+    box.querySelector('tbody').innerHTML=r.length?r.map((x,i)=>`<tr style="animation-delay:${Math.min(i,14)*35}ms">${s.cols.map(c=>`<td>${cell(c,x[c],s.o)}</td>`).join('')}${s.o.act?`<td class="act">${s.o.act(x)}</td>`:''}</tr>`).join(''):'<tr><td colspan="99" class="empty">No records found 🌱</td></tr>';
+    box.querySelector('.cnt').textContent=r.length+' record(s)';
+  };
+  box.querySelector('thead').onclick=e=>{const k=e.target.dataset.k;if(!k)return;s.d=s.k===k?-s.d:1;s.k=k;draw()};
+  const ts=box.querySelector('.ts');if(ts)ts.oninput=e=>{s.q=e.target.value.toLowerCase();draw()};
+  box.querySelector('[data-x]').onclick=()=>{
+    const csv=[s.cols.join(','),...s.rows.map(r=>s.cols.map(c=>'"'+String(r[c]??'').replace(/"/g,'""')+'"').join(','))].join('\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=id+'.csv';a.click();toast('CSV exported','info')};
+  draw();
+}
+
+/* ---------- helpers for pages ---------- */
+const ph=(t,btn='')=>`<div class="ph"><h2>${t}</h2><div>${btn}</div></div>`;
+const grow=()=>setTimeout(()=>{$$('.bar i').forEach(i=>i.style.width=i.dataset.w+'%');$$('.seg').forEach(s=>s.style.strokeDasharray=s.dataset.d)},90);
+function countUp(root=document){root.querySelectorAll('[data-n]').forEach(el=>{const to=+el.dataset.n,m=el.dataset.m,t0=performance.now();
+  (function f(t){const p=Math.min(1,(t-t0)/1000),v=to*(1-Math.pow(1-p,3));el.textContent=m?money(v):Math.round(v).toLocaleString();if(p<1)requestAnimationFrame(f)})(t0)})}
+const SK=`<div class="sk" style="height:34px;width:260px;margin-bottom:20px"></div><div class="grid">${'<div class="sk" style="height:92px"></div>'.repeat(4)}</div><div class="sk" style="height:300px"></div>`;
+
+function chart7(daily){
+  const map={};daily.forEach(x=>map[x.d]=+x.rev);
+  const days=[...Array(7)].map((_,i)=>{const d=new Date(Date.now()-(6-i)*864e5);return{k:ymd(d),l:d.toLocaleDateString('en',{weekday:'short'})}});
+  const mx=Math.max(1,...days.map(d=>map[d.k]||0)),W=560,Hh=220,bw=46,gap=(W-7*bw)/8;
+  return `<svg viewBox="0 0 ${W} ${Hh+30}" class="ch">`+[0,.5,1].map(f=>`<line x1="0" x2="${W}" y1="${Hh-f*(Hh-30)}" y2="${Hh-f*(Hh-30)}" stroke="var(--line)"/>`).join('')+
+  days.map((d,i)=>{const v=map[d.k]||0,h=v/mx*(Hh-30),x=gap+i*(bw+gap);
+    return `<g><rect class="bar7" x="${x}" y="${Hh-h}" width="${bw}" height="${Math.max(h,3)}" rx="9" style="animation-delay:${i*90}ms"><title>${d.l}: ${money(v)}</title></rect><text x="${x+bw/2}" y="${Hh+20}" text-anchor="middle" class="lb">${d.l}</text>${v?`<text x="${x+bw/2}" y="${Hh-h-7}" text-anchor="middle" class="lb v">${Math.round(v)}</text>`:''}</g>`}).join('')+'</svg>';
+}
+function donut(a){const tot=a.reduce((s,x)=>s+ +x.qty,0)||1;let off=0;
+  const segs=a.map((x,i)=>{const p=x.qty/tot*100,s=`<circle class="seg" r="15.9155" cx="21" cy="21" fill="none" stroke="${COL[i%6]}" stroke-width="6" data-d="${p} ${100-p}" style="stroke-dasharray:0 100" stroke-dashoffset="${-off}"><title>${esc(x.fruit_name)}: ${x.qty}</title></circle>`;off+=p;return s}).join('');
+  return `<div class="dn"><svg viewBox="0 0 42 42" style="transform:rotate(-90deg)"><circle r="15.9155" cx="21" cy="21" fill="none" stroke="var(--line)" stroke-width="6"/>${segs}</svg><div class="dc"><b>${tot}</b><small class="muted">boxes</small></div></div><div class="lg">${a.map((x,i)=>`<span><i style="background:${COL[i%6]}"></i>${EMO[x.fruit_name]||''} ${esc(x.fruit_name)}<b style="margin-left:auto">${x.qty}</b></span>`).join('')}</div>`}
+const bars=s=>s.map(x=>`<div class="sz"><span>${EMO[x.fruit_name]||''} ${esc(x.fruit_name)} · ${x.packaging_size}</span><div class="bar ${x.available_quantity<=LOW?'low':''}"><i data-w="${Math.min(100,x.available_quantity)}"></i></div><b>${x.available_quantity}</b></div>`).join('');
+
+/* ---------- pages ---------- */
+const V={};
+V.dash=async()=>{
+  const [d,st,lo]=await Promise.all([api('/dashboard'),api('/stock'),api('/stock/low')]);
+  const T=d.totals,hr=new Date().getHours(),gr=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  CACHE.debtor=d.debtors;
+  const boxes=st.reduce((a,x)=>a+x.available_quantity,0);
+  const stats=[['💰','Total revenue',T.revenue,1],['📅','Sales today',T.today,1],['🧾','Owed by vendors',T.outstanding,1],['📦','Boxes in stock',boxes,0],['🛒','Vendors',T.vendors,0],['🚚','Suppliers',T.suppliers,0],['🛍️','Purchase spend',T.purchases_cost,1],['⚠️','Low-stock alerts',lo.length,0]];
+  H(view,`<div class="hero"><div><h2>${gr}, Admin 👋</h2><p>Here is what is happening at Batloung Farm.</p><div class="qa"><button class="b" onclick="go('sale')">🧾 New sale</button><button class="b" onclick="go('purchase')">📦 New purchase</button><button class="b" onclick="addEnt('vendor')">＋ Vendor</button></div></div><div class="clk" id="clk"></div></div>
+  ${lo.length?`<div class="alert"><span>⚠️ <b>${lo.length} stock item(s)</b> are running low (≤ ${LOW} boxes).</span><button class="b sm ghost" style="color:#fff;border-color:#fff" onclick="go('purchase')">Restock now →</button></div>`:''}
+  <div class="grid">${stats.map(([ic,l,n,m],i)=>`<div class="card stat" style="animation-delay:${i*70}ms"><span class="si">${ic}</span><div><small>${l}</small><b data-n="${n}" data-m="${m?1:''}">0</b></div></div>`).join('')}</div>
+  <div class="g2"><div class="card"><h3>📈 Sales — last 7 days</h3>${chart7(d.daily)}</div><div class="card"><h3>🥧 Stock by fruit</h3>${donut(d.stockByFruit)}</div></div>
+  <div class="g2e"><div class="card"><h3>🕒 Recent activity</h3>${d.recent.length?d.recent.map(r=>`<div class="tl" onclick="${r.type==='sale'?'receipt':'prcpt'}(${r.id})"><i>${r.type==='sale'?'🧾':'📦'}</i><div><b>${esc(r.party)}</b><small>${r.type==='sale'?'Sale':'Purchase'} #${r.id} · ${r.d}</small></div><span class="${r.type==='sale'?'pos':'neg2'}">${r.type==='sale'?'+':'−'}${money(r.amount)}</span></div>`).join(''):'<p class="muted">No activity yet 🌱</p>'}</div>
+  <div class="card"><h3>💸 Vendors who owe money</h3>${d.debtors.length?d.debtors.map(v=>`<div class="tl"><i>👤</i><div><b>${esc(v.vendor_name)}</b><small>${esc(v.phone_number)}</small></div><span class="neg">${money(v.outstanding_balance)}</span><button class="ib" title="WhatsApp reminder" onclick="remind(${v.vendor_id})">💬</button></div>`).join(''):'<p class="muted">Nobody owes anything 🎉</p>'}</div></div>
+  <div class="card"><h3>Stock by packaging size <small class="muted">(red = low)</small></h3>${bars(st)}</div>`);
+  countUp(view);grow();
+};
+V.suppliers=async()=>{
+  const s=await api('/suppliers');CACHE.supplier=s;
+  const by={};s.forEach(x=>by[x.province]=(by[x.province]||0)+1);
+  H(view,`${ph('🚚 Suppliers','<button class="b" onclick="addEnt(\'supplier\')">＋ Add supplier</button>')}
+  <div class="chips">${Object.entries(by).map(([k,v])=>`<span class="chip">📍 ${k}: ${v}</span>`).join('')||'<span class="chip">No suppliers yet</span>'}</div>
+  <div class="card">${dt('tsu',s,['supplier_id','business_name','contact_person','phone','province','address'],{act:r=>`<button class="ib" title="Edit" onclick="editEnt('supplier',${r.supplier_id})">✏️</button><button class="ib" title="Delete" onclick="delEnt('supplier',${r.supplier_id})">🗑️</button>`})}</div>`);
+  wire('tsu');
+};
+V.stock=async()=>{
+  const [f,st,lo]=await Promise.all([api('/fruits?all=1'),api('/stock'),api('/stock/low')]);
+  CACHE.fruit=f;const by={};st.forEach(x=>(by[x.fruit_id]=by[x.fruit_id]||[]).push(x));
+  const total=st.reduce((a,x)=>a+x.available_quantity,0);
+  H(view,`${ph('🍌 Fruits &amp; Stock','<button class="b" onclick="addEnt(\'fruit\')">＋ Add fruit</button>')}
+  <div class="chips"><span class="chip">🍏 ${f.length} fruit types</span><span class="chip">📦 ${total} boxes</span><span class="chip ${lo.length?'warn':''}">⚠️ ${lo.length} low-stock</span></div>
+  <div class="grid3">${f.map((fr,i)=>`<div class="card fc" style="animation-delay:${i*80}ms"><div class="fh"><span class="big">${EMO[fr.fruit_name]||'🍏'}</span><div><h3>${esc(fr.fruit_name)}</h3><small class="muted">${esc(fr.description||'')}</small></div>${badge(fr.status)}</div>${(by[fr.fruit_id]||[]).map(x=>`<div class="sz"><span>${x.packaging_size}</span><div class="bar ${x.available_quantity<=LOW?'low':''}"><i data-w="${Math.min(100,x.available_quantity)}"></i></div><b>${x.available_quantity}</b></div>`).join('')}<div class="fa"><button class="ib" title="Edit" onclick="editEnt('fruit',${fr.fruit_id})">✏️</button><button class="ib" title="Delete" onclick="delEnt('fruit',${fr.fruit_id})">🗑️</button></div></div>`).join('')}</div>
+  <div class="card"><h3>⚠️ Low stock (≤ ${LOW} boxes)</h3>${lo.length?dt('tlo',lo,['fruit_name','packaging_size','available_quantity'])+'<button class="b" style="margin-top:12px" onclick="go(\'purchase\')">📦 Restock now</button>':'<p class="muted">All stock levels are healthy ✅</p>'}</div>`);
+  if(lo.length)wire('tlo');grow();
+};
+V.vendors=async()=>{
+  const v=await api('/vendors');CACHE.vendor=v;
+  const owed=v.reduce((a,x)=>a+x.outstanding_balance,0),deb=v.filter(x=>x.outstanding_balance>0).length;
+  H(view,`${ph('🛒 Vendors','<button class="b" onclick="addEnt(\'vendor\')">＋ Add vendor</button>')}
+  <div class="chips"><span class="chip">👥 ${v.length} vendors</span><span class="chip">💸 ${money(owed)} owed</span><span class="chip ${deb?'warn':''}">⏳ ${deb} with a balance</span></div>
+  <div class="card"><div class="tools"><input id="vq" placeholder="🔍 Search by name or phone (server search)…" style="max-width:360px"></div>
+  ${dt('tv',v,['vendor_id','vendor_name','phone_number','location','registration_date','outstanding_balance'],{nosearch:1,money:['outstanding_balance'],act:r=>`${r.outstanding_balance>0?`<button class="ib" title="Record payment" onclick="payVendor(${r.vendor_id})">💵</button><button class="ib" title="WhatsApp reminder" onclick="remind(${r.vendor_id})">💬</button>`:''}<button class="ib" title="Edit" onclick="editEnt('vendor',${r.vendor_id})">✏️</button><button class="ib" title="Delete" onclick="delEnt('vendor',${r.vendor_id})">🗑️</button>`})}</div>`);
+  wire('tv');let tm;
+  $('#vq').oninput=e=>{clearTimeout(tm);tm=setTimeout(async()=>{try{const q=e.target.value.trim();TB.tv.rows=q?await api('/vendors/search?q='+encodeURIComponent(q),'GET',null,{quiet:true}):v;TB.tv.draw()}catch{}},300)};
+};
+
+/* purchase + sale builder */
+const row=(fr,sale)=>`<div class="row it"><label>Fruit<select class="f">${fr.map(f=>`<option value="${f.fruit_id}">${EMO[f.fruit_name]||''} ${esc(f.fruit_name)}</option>`).join('')}</select></label><label>Size<select class="s">${SZ.map(s=>`<option>${s}</option>`).join('')}</select></label><label>Quantity (boxes)<input class="q" type="number" min="1" value="1"></label>${sale?'':'<label>Unit cost (M)<input class="p" type="number" step=".01" min=".01" placeholder="0.00"></label>'}<div class="sb"><small class="muted">Subtotal</small><b class="sub">M0.00</b>${sale?'<small class="av"></small>':''}</div><button type="button" class="ib" title="Remove" onclick="this.closest('.it').remove();calc()">✕</button></div>`;
+const items=()=>$$('.it').map(r=>({fruit_id:+r.querySelector('.f').value,packaging_size:r.querySelector('.s').value,quantity:+r.querySelector('.q').value,unit_cost:+((r.querySelector('.p')||{}).value||0)}));
+function calc(){if(!$('#tot'))return;const sale=KIND==='sale';let t=0;
+  $$('.it').forEach(r=>{const f=r.querySelector('.f').value,s=r.querySelector('.s').value,q=+r.querySelector('.q').value||0,pr=sale?PR[s]:(+(r.querySelector('.p')||{}).value||0),sub=q*pr;t+=sub;r.querySelector('.sub').textContent=money(sub);
+    if(sale){const a=STK[f+'|'+s]??0,av=r.querySelector('.av');av.textContent='In stock: '+a;av.classList.toggle('bad',q>a)}});
+  const el=$('#tot');if(el.textContent!==money(t)){el.textContent=money(t);el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
+  if(sale){const pm=$('#pm').value,ap=$('#ap').value,paid=ap===''?(pm==='Credit'?0:t):+ap;$('#paid').textContent=money(paid);$('#due').textContent=money(Math.max(0,t-paid))}}
+async function trade(k){
+  KIND=k;const sale=k==='sale';
+  const [fr,who,st]=await Promise.all([api('/fruits?all=1'),api(sale?'/vendors':'/suppliers'),api('/stock')]);
+  STK={};st.forEach(x=>STK[x.fruit_id+'|'+x.packaging_size]=x.available_quantity);
+  if(sale)PR=await api('/prices');
+  H(view,`${ph(sale?'🧾 New sale':'📦 New purchase')}
+  <div class="card"><div class="row"><label>${sale?'Vendor':'Supplier'}<select id="pt">${who.map(x=>sale?`<option value="${x.vendor_id}">${esc(x.vendor_name)}${x.outstanding_balance>0?' (owes '+money(x.outstanding_balance)+')':''}</option>`:`<option value="${x.supplier_id}">${esc(x.business_name)} — ${esc(x.province)}</option>`).join('')}</select></label>
+  ${sale?`<label>Payment method<select id="pm"><option>Cash</option><option>Mobile Money</option><option>Credit</option></select></label><label>Amount paid now (optional)<input id="ap" type="number" step=".01" min="0" placeholder="Leave empty = automatic"></label>`:''}</div>
+  ${sale?`<p class="muted">💲 Prices per box: ${SZ.map(s=>`<b>${s}</b> ${money(PR[s])}`).join(' · ')}</p>`:''}</div>
+  <div class="card"><h3>Items</h3><div id="its"></div><button class="b ghost" id="add">＋ Add fruit</button></div>
+  <div class="sumbar"><div><small class="muted">Total</small><b id="tot">M0.00</b></div>${sale?'<div><small class="muted">Paid now</small><b id="paid">M0.00</b></div><div><small class="muted">Balance due</small><b id="due">M0.00</b></div>':''}<button class="b" id="go">${sale?'✔ Complete sale':'✔ Record purchase'}</button></div>`);
+  const add=()=>{$('#its').insertAdjacentHTML('beforeend',row(fr,sale));calc()};add();
+  $('#add').onclick=add;$('#its').addEventListener('input',calc);$('#its').addEventListener('change',calc);
+  if(sale){$('#pm').onchange=calc;$('#ap').oninput=calc}
+  $('#go').onclick=async e=>{const btn=e.currentTarget;loading(btn,1);
+    try{const b={items:items()};
+      if(sale){b.vendor_id=+$('#pt').value;b.payment_method=$('#pm').value;if($('#ap').value!=='')b.amount_paid=+$('#ap').value}else b.supplier_id=+$('#pt').value;
+      const r=await api(sale?'/sales':'/purchases','POST',b);
+      confetti();
+      const doc=await api((sale?'/sales/':'/purchases/')+(r.sale_id||r.purchase_id),'GET',null,{quiet:true});
+      sale?docSale(doc,true):docPurchase(doc,true);refresh();
+    }catch{shake($('.sumbar'))}finally{loading(btn,0)}};
+}
+V.purchase=()=>trade('purchase');V.sale=()=>trade('sale');
+
+/* receipts */
+function docModal(o){
+  const ok='<svg class="ck" viewBox="0 0 52 52"><circle cx="26" cy="26" r="24" fill="none" stroke="currentColor" stroke-width="3"/><path d="M14 27l8 8 16-17" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  modal(`${o.fresh?`<div class="okh">${ok}<h3>${o.fresh}</h3></div>`:''}<div class="rcpt"><div class="rh"><b>🍎 Batloung Farm</b><small>Maseru, Lesotho · Fresh Produce Distribution</small></div><div class="rm"><span>${o.title} #${o.no}</span><span>${o.date}</span></div><p class="rp">${o.pl}: <b>${esc(o.party)}</b></p>
+  <table><tr><th>Fruit</th><th>Size</th><th>Qty</th><th>Price</th><th>Total</th></tr>${o.items.map(i=>`<tr><td>${EMO[i.fruit_name]||''} ${esc(i.fruit_name)}</td><td>${i.packaging_size}</td><td>${i.quantity}</td><td>${money(i.unit_price)}</td><td>${money(i.line_total)}</td></tr>`).join('')}</table>
+  ${o.foot.map(([k,v])=>`<div class="rt"><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+  <div class="mf"><button class="b ghost" data-close>Close</button><button class="b" onclick="window.print()">🖨 Print</button></div>`,'wide');
+}
+const docSale=(r,fresh)=>docModal({fresh:fresh&&'Sale completed!',title:'Receipt',no:r.sale_id,date:r.sale_date,pl:'Vendor',party:r.vendor_name,items:r.items,
+  foot:[['Total',money(r.total_amount)],['Paid ('+esc(r.payment_method)+')',money(r.amount_paid)],['Balance due',`<span class="${r.balance>0?'neg':''}">${money(r.balance)}</span>`],['Status',badge(r.payment_status)]]});
+const docPurchase=(r,fresh)=>docModal({fresh:fresh&&'Purchase recorded!',title:'Purchase',no:r.purchase_id,date:r.purchase_date,pl:'Supplier',party:r.business_name,items:r.items,
+  foot:[['Total cost',money(r.total_amount)],['Boxes received',r.boxes],['Stock','Updated ✔']]});
+async function receipt(id){try{docSale(await api('/sales/'+id),false)}catch{}}
+async function prcpt(id){try{docPurchase(await api('/purchases/'+id),false)}catch{}}
+
+V.history=async()=>{
+  const [s,p]=await Promise.all([api('/sales'),api('/purchases')]);
+  H(view,`${ph('🕘 History')}<div class="tabs"><button class="tab on" data-t="s">🧾 Sales (${s.length})</button><button class="tab" data-t="p">📦 Purchases (${p.length})</button></div>
+  <div class="card" id="tab-s">${dt('ths',s,['sale_id','vendor_name','sale_date','payment_method','payment_status','total_amount','amount_paid','balance'],{money:['total_amount','amount_paid','balance'],act:r=>`<button class="b sm" onclick="receipt(${r.sale_id})">🧾 Receipt</button>`})}</div>
+  <div class="card" id="tab-p" style="display:none">${dt('thp',p,['purchase_id','business_name','purchase_date','boxes','total_amount'],{money:['total_amount'],act:r=>`<button class="b sm" onclick="prcpt(${r.purchase_id})">📦 Details</button>`})}</div>`);
+  wire('ths');wire('thp');
+  $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('on',x===b));$('#tab-s').style.display=b.dataset.t==='s'?'':'none';$('#tab-p').style.display=b.dataset.t==='p'?'':'none'});
+};
+V.reports=async()=>{
+  const [t,v,s]=await Promise.all([api('/reports/top-fruits'),api('/reports/top-vendor'),api('/stock')]);
+  const mx=Math.max(1,...t.map(x=>+x.boxes_sold));
+  H(view,`${ph('📈 Reports','<button class="b ghost" onclick="window.print()">🖨 Print report</button>')}
+  <div class="g2e"><div class="card"><h3>🏆 Top 5 fruits sold</h3>${t.length?t.map(x=>`<div class="hb"><span>${EMO[x.fruit_name]||''} ${esc(x.fruit_name)}</span><div class="bar"><i data-w="${x.boxes_sold/mx*100}"></i></div><b>${x.boxes_sold}</b></div>`).join(''):'<p class="muted">Record some sales first 🌱</p>'}</div>
+  <div class="card"><h3>👑 Vendor with most boxes</h3>${v.length?`<div class="trophy"><span class="big">🏆</span><div><h2>${esc(v[0].vendor_name)}</h2><p class="muted">${v[0].boxes_bought} boxes purchased</p></div></div>`:'<p class="muted">No sales yet 🌱</p>'}</div></div>
+  <div class="card"><h3>💰 Revenue for a date range</h3><div class="row"><label>From<input id="rf" type="date"></label><label>To<input id="rt" type="date"></label><button class="b" id="rc">Calculate</button></div>
+  <div class="qa" style="margin:8px 0"><button class="b ghost sm" data-r="0">Today</button><button class="b ghost sm" data-r="7">Last 7 days</button><button class="b ghost sm" data-r="30">Last 30 days</button><button class="b ghost sm" data-r="365">This year</button></div><div id="rev" class="bigno"></div></div>
+  <div class="card"><h3>📦 Current stock levels</h3>${dt('trs',s,['fruit_name','packaging_size','available_quantity'])}</div>`);
+  wire('trs');grow();
+  const run=async()=>{const rc=$('#rc');loading(rc,1);try{const r=await api(`/reports/revenue?from=${$('#rf').value}&to=${$('#rt').value}`,'GET',null,{quiet:true});
+    H($('#rev'),`<b data-n="${r.revenue}" data-m="1">0</b><small class="muted">from ${r.sales_count} sale(s) · ${$('#rf').value} → ${$('#rt').value}</small>`);countUp($('#rev'))}catch{}finally{loading(rc,0)}};
+  const rng=d=>{$('#rt').value=ymd(new Date());$('#rf').value=ymd(new Date(Date.now()-d*864e5));run()};
+  $('#rc').onclick=()=>{if(!$('#rf').value||!$('#rt').value)return toast('Pick both dates','warn');run()};
+  $$('[data-r]').forEach(b=>b.onclick=()=>rng(+b.dataset.r));rng(30);
+};
+
+/* map */
+const C={Maseru:[-29.31,27.48],Teyateyaneng:[-29.15,27.74],Mafeteng:[-29.82,27.24],Leribe:[-28.87,28.05],Gauteng:[-26.2,28.05],'Free State':[-29.12,26.21],'KwaZulu-Natal':[-29.86,31.02],'Western Cape':[-33.92,18.42],'Eastern Cape':[-32.99,27.91],Limpopo:[-23.9,29.45],Mpumalanga:[-25.47,30.97],'North West':[-25.86,25.64]};
+const hav=(a,b)=>{const r=x=>x*Math.PI/180,h=Math.sin(r(b[0]-a[0])/2)**2+Math.cos(r(a[0]))*Math.cos(r(b[0]))*Math.sin(r(b[1]-a[1])/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+async function osrm(a,b){const ac=new AbortController(),t=setTimeout(()=>ac.abort(),7000);
+  try{const j=await(await fetch(`https://router.project-osrm.org/route/v1/driving/${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`,{signal:ac.signal})).json();const x=j.routes[0];return{km:x.distance/1000,min:x.duration/60,path:x.geometry.coordinates.map(c=>[c[1],c[0]]),live:true}}
+  catch{const km=hav(a,b)*1.3;return{km,min:km,path:[a,b],live:false}}finally{clearTimeout(t)}}
+V.map=async()=>{
+  if(typeof L==='undefined'){H(view,'<div class="card center"><div class="big">🗺️</div><h3>The map needs an internet connection</h3><p class="muted">Connect and press retry.</p><button class="b" onclick="go(\'map\')">↻ Retry</button></div>');return}
+  const [vn,sp]=await Promise.all([api('/vendors'),api('/suppliers')]);const farm=C.Maseru;
+  const pts=[{n:'🏠 Batloung Farm (Maseru)',c:farm},...vn.filter(v=>C[v.location]).map(v=>({n:'🛒 '+v.vendor_name,c:C[v.location]})),...sp.filter(s=>C[s.province]).map(s=>({n:'🚚 '+s.business_name,c:C[s.province]}))];
+  H(view,`${ph('🗺️ Route Planner')}<div class="card"><div class="row"><label>Destination<select id="dst">${pts.map((p,i)=>`<option value="${i}">${esc(p.n)}</option>`).join('')}</select></label><label>Fuel cost per km (M)<input id="fc" type="number" step=".1" min="0" value="3.5"></label><button class="b" id="me">📍 Use my location</button><button class="b ghost" id="run">🚚 Plan delivery run</button></div>
+  <p class="muted" id="hint">Click the map (or use your location) to set a pickup point, then choose a destination.</p>
+  <div class="m3"><div><b id="i1">—</b><small class="muted">Distance</small></div><div><b id="i2">—</b><small class="muted">Drive time</small></div><div><b id="i3">—</b><small class="muted">Estimated fuel</small></div></div>
+  <div id="map"></div><div id="runlist"></div></div>`);
+  const map=L.map('map').setView([-29.3,27.5],7);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
+  pts.forEach(p=>L.marker(p.c).addTo(map).bindPopup(esc(p.n)));
+  let from=null,mk,ln,rl,last=null;
+  const info=()=>{if(!last)return;$('#i1').textContent=last.km.toFixed(1)+' km';$('#i2').textContent=Math.floor(last.min/60)+'h '+Math.round(last.min%60)+'m';$('#i3').textContent=money(last.km*(+$('#fc').value||0));$('#hint').textContent=last.live?'Live road route from OpenStreetMap routing.':'Routing service unreachable — showing straight-line distance × 1.3.'};
+  const route=async()=>{if(!from)return;busyOn();try{last=await osrm(from,pts[$('#dst').value].c);if(ln)ln.remove();ln=L.polyline(last.path,{color:'#1f7a4d',weight:5}).addTo(map);map.fitBounds(ln.getBounds(),{padding:[30,30]});info();toast('Route calculated','info')}finally{busyOff()}};
+  const setFrom=ll=>{from=ll;if(mk)mk.remove();mk=L.circleMarker(ll,{radius:9,color:'#ff8c42'}).addTo(map).bindPopup('Pickup').openPopup();route()};
+  map.on('click',e=>setFrom([e.latlng.lat,e.latlng.lng]));$('#dst').onchange=route;$('#fc').oninput=info;
+  $('#me').onclick=()=>navigator.geolocation?navigator.geolocation.getCurrentPosition(p=>setFrom([p.coords.latitude,p.coords.longitude]),()=>toast('Location permission denied','error')):toast('Geolocation not supported','error');
+  $('#run').onclick=()=>{
+    const stops={};vn.filter(v=>C[v.location]).forEach(v=>(stops[v.location]=stops[v.location]||[]).push(v.vendor_name));
+    const left=Object.keys(stops);if(!left.length)return toast('No vendors with a known location','warn');
+    let pos=farm,tot=0;const order=[];
+    while(left.length){let bi=0,bd=1e9;left.forEach((k,i)=>{const d=hav(pos,C[k]);if(d<bd){bd=d;bi=i}});const k=left.splice(bi,1)[0];order.push({k,leg:bd*1.3});tot+=bd*1.3;pos=C[k]}
+    tot+=hav(pos,farm)*1.3;if(rl)rl.remove();rl=L.layerGroup().addTo(map);
+    const path=[farm,...order.map(o=>C[o.k]),farm];
+    L.polyline(path,{color:'#ff8c42',weight:4,dashArray:'8 10'}).addTo(rl);
+    order.forEach((o,i)=>L.marker(C[o.k],{icon:L.divIcon({className:'',html:`<div class="num">${i+1}</div>`,iconSize:[26,26]})}).addTo(rl).bindPopup(esc(stops[o.k].join(', '))));
+    map.fitBounds(L.polyline(path).getBounds(),{padding:[30,30]});
+    $('#runlist').innerHTML=`<h3 style="margin-top:16px">🚚 Suggested delivery run (nearest-stop-first)</h3>${order.map((o,i)=>`<div class="tl"><i>${i+1}</i><div><b>${esc(o.k)}</b><small>${esc(stops[o.k].join(', '))}</small></div><span class="pos">${o.leg.toFixed(0)} km</span></div>`).join('')}<p style="margin-top:10px"><b>Round trip ≈ ${tot.toFixed(0)} km</b> · estimated fuel ${money(tot*(+$('#fc').value||0))}</p>`;
+    toast('Delivery run planned','ok');
+  };
+};
+
+/* ---------- navigation, palette, theme, health ---------- */
+async function go(v,soft){
+  cur=v;$$('nav button[data-v]').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  if(!soft)H(view,SK);
+  try{await V[v]();if(!soft){view.classList.remove('pg');void view.offsetWidth;view.classList.add('pg')}}
+  catch{H(view,'<div class="card center"><div class="big">🔌</div><h3>Could not load this page</h3><p class="muted">Check that the server and MySQL are running.</p><button class="b" onclick="go(cur)">↻ Retry</button></div>')}
+}
+const CMDS=[['📊 Go to Dashboard',()=>go('dash')],['🚚 Go to Suppliers',()=>go('suppliers')],['🍌 Go to Fruits & Stock',()=>go('stock')],['🛒 Go to Vendors',()=>go('vendors')],['📦 New purchase',()=>go('purchase')],['🧾 New sale',()=>go('sale')],['🕘 History',()=>go('history')],['📈 Reports',()=>go('reports')],['🗺️ Route planner',()=>go('map')],['➕ Add supplier',()=>addEnt('supplier')],['➕ Add vendor',()=>addEnt('vendor')],['➕ Add fruit',()=>addEnt('fruit')],['🌓 Toggle dark mode',()=>toggleDark()]];
+function palette(){
+  const m=modal('<input class="pk" placeholder="Type a command…" autocomplete="off"><div class="pl"></div>','pal');
+  const inp=m.md.querySelector('.pk'),pl=m.md.querySelector('.pl');let sel=0,list=CMDS;
+  const draw=()=>{pl.innerHTML=list.map((c,i)=>`<div class="pi ${i===sel?'on':''}" data-i="${i}">${c[0]}</div>`).join('')||'<div class="pi muted">No match</div>'};
+  const run=i=>{if(list[i]){m.close();list[i][1]()}};
+  inp.oninput=()=>{list=CMDS.filter(c=>c[0].toLowerCase().includes(inp.value.toLowerCase()));sel=0;draw()};
+  inp.onkeydown=e=>{if(e.key==='ArrowDown'){sel=Math.min(list.length-1,sel+1);draw();e.preventDefault()}else if(e.key==='ArrowUp'){sel=Math.max(0,sel-1);draw();e.preventDefault()}else if(e.key==='Enter')run(sel)};
+  pl.onclick=e=>{const i=e.target.dataset.i;if(i!==undefined)run(+i)};draw();inp.focus();
+}
+function toggleDark(){document.body.classList.toggle('dark');try{localStorage.setItem('dark',document.body.classList.contains('dark')?1:0)}catch{}}
+try{if(localStorage.getItem('dark')==='1')document.body.classList.add('dark')}catch{}
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();palette()}});
+setInterval(()=>{const c=$('#clk');if(c)c.textContent=new Date().toLocaleString('en-GB',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',second:'2-digit'})},1000);
+function setOnline(ok){const d=$('#st');d.className=ok?'':'off';d.querySelector('span').textContent=ok?'Database online':'Database offline';
+  if(ok!==online){online=ok;toast(ok?'Connection restored':'Database connection lost','warn');if(ok)refresh()}}
+async function ping(){try{const r=await fetch('/api/health');setOnline(r.ok)}catch{setOnline(false)}}
+setInterval(ping,8000);ping();
+$$('nav button[data-v]').forEach(b=>b.onclick=()=>go(b.dataset.v));go('dash');
+</script></body></html>
